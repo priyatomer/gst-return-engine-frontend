@@ -74,7 +74,7 @@ export default function Contact() {
 
             <motion.a
               whileHover={{ scale: 1.02, y: -3 }}
-              href="https://wa.me/919876543210"
+              href="https://wa.me/917737740024"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-white rounded-xl p-4 flex items-center gap-3 border border-emerald-200 hover:border-emerald-400 hover:shadow-md transition-all"
