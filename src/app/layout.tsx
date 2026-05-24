@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geist.variable} scroll-smooth`}>
-      <body className="bg-[#0A0F1E] text-slate-100 antialiased overflow-x-hidden">
+      <body className="bg-white text-slate-900 antialiased overflow-x-hidden">
         {children}
       </body>
     </html>
