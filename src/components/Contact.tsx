@@ -5,10 +5,10 @@ import { useRef, useState } from "react";
 import { Mail, Phone, MapPin, Send, CheckCircle2, Clock, MessageSquare } from "lucide-react";
 
 const contactInfo = [
-  { icon: <Phone  size={20} />, label: "Phone",         value: "+91 98765 43210",       sub: "Mon–Sat, 9AM–7PM IST"        },
-  { icon: <Mail   size={20} />, label: "Email",         value: "hello@bhandariandco.in", sub: "We reply within 24 hours"    },
-  { icon: <MapPin size={20} />, label: "Office",        value: "New Delhi, India",       sub: "Pan-India Operations"        },
-  { icon: <Clock  size={20} />, label: "Working Hours", value: "Mon – Sat",              sub: "9:00 AM – 7:00 PM IST"       },
+  { icon: <Phone  size={20} />, label: "Phone",         value: "+91 7737740024",                    sub: "Mon–Sat, 10AM–7PM IST"       },
+  { icon: <Mail   size={20} />, label: "Email",         value: "bhandariandcompanygroup@gmail.com",  sub: "We reply within 24 hours"    },
+  { icon: <MapPin size={20} />, label: "Office",        value: "Jaipur, Rajasthan",                 sub: "Pan-India Operations"        },
+  { icon: <Clock  size={20} />, label: "Working Hours", value: "Mon – Sat",                         sub: "10:00 AM – 7:00 PM IST"      },
 ];
 
 const services = [

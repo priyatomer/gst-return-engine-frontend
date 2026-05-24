@@ -5,10 +5,10 @@ import { useRef, useEffect } from "react";
 import { FileText, Users, Trophy, Building2 } from "lucide-react";
 
 const stats = [
-  { icon: <FileText  size={28} />, value: 10000, suffix: "+",   label: "GST Returns Filed",  color: "text-sky-500",    bg: "bg-sky-50    border-sky-200"   },
-  { icon: <Users     size={28} />, value: 500,   suffix: "+",   label: "Satisfied Clients",  color: "text-blue-500",   bg: "bg-blue-50   border-blue-200"  },
-  { icon: <Trophy    size={28} />, value: 99,    suffix: ".8%", label: "Accuracy Rate",      color: "text-indigo-500", bg: "bg-indigo-50 border-indigo-200"},
-  { icon: <Building2 size={28} />, value: 8,     suffix: "+",   label: "Years of Excellence",color: "text-violet-500", bg: "bg-violet-50 border-violet-200"},
+  { icon: <FileText  size={28} />, value: 5000, suffix: "+",   label: "GST Returns Filed",  color: "text-sky-500",    bg: "bg-sky-50    border-sky-200"   },
+  { icon: <Users     size={28} />, value: 206,  suffix: "+",   label: "Happy Clients",      color: "text-blue-500",   bg: "bg-blue-50   border-blue-200"  },
+  { icon: <Trophy    size={28} />, value: 99,   suffix: ".8%", label: "Accuracy Rate",      color: "text-indigo-500", bg: "bg-indigo-50 border-indigo-200"},
+  { icon: <Building2 size={28} />, value: 5,    suffix: "+",   label: "Years of Excellence",color: "text-violet-500", bg: "bg-violet-50 border-violet-200"},
 ];
 
 function Counter({ value, suffix }: { value: number; suffix: string }) {

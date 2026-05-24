@@ -66,8 +66,7 @@ export default function About() {
             <motion.p variants={fadeLeft} className="text-slate-600 text-lg leading-relaxed">
               <span className="text-sky-600 font-semibold">Bhandari & Co.</span> is a
               next-generation multi-business conglomerate rooted in expertise, integrity, and
-              technology. With operations spanning GST compliance and enterprise software, we
-              serve thousands of businesses across India.
+              technology. With operations spanning GST compliance and enterprise software.
             </motion.p>
             <motion.p variants={fadeLeft} className="text-slate-500 leading-relaxed">
               Founded on principles of accuracy, transparency, and client empowerment, we have
@@ -76,7 +75,7 @@ export default function About() {
 
             <motion.div variants={fadeLeft} className="grid grid-cols-2 gap-4 mt-2">
               {[
-                ["Pan-India Operations", "Serving clients in 20+ states"],
+                ["Pan-India Operations", "Serving clients in 10+ states"],
                 ["Expert Team",          "CA, CS & Tech professionals"],
                 ["Tech-First Approach",  "Automation at the core"],
                 ["Timely Delivery",      "Zero penalty track record"],

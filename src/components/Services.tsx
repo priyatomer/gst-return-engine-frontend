@@ -14,7 +14,7 @@ const gstServices = [
   { icon: <AlertCircle size={22} />, title: "Notice & Audit",       desc: "Expert representation for GST notices, audits, appeals, and departmental proceedings."         },
   { icon: <BookOpen    size={22} />, title: "GST Advisory",         desc: "Strategic tax planning, HSN/SAC classification, rate optimization for your industry."          },
   { icon: <ShieldCheck size={22} />, title: "Annual Compliance",    desc: "GSTR-9 & GSTR-9C annual return filing with full audit trail and documentation."                },
-  { icon: <RefreshCw   size={22} />, title: "e-Way Bill Mgmt",      desc: "Bulk generation, modification and cancellation of e-Way Bills for seamless logistics."         },
+  { icon: <RefreshCw   size={22} />, title: "e-Way Bill & e-Invoicing", desc: "Bulk generation of e-Way Bills and e-Invoices; modification, cancellation, and compliance management."         },
 ];
 
 const softwareServices = [

@@ -7,7 +7,7 @@ import { Clock, ShieldCheck, Users, TrendingUp, HeadphonesIcon, Sparkles } from 
 const features = [
   { icon: <Clock            size={26} />, title: "On-Time Delivery",   desc: "We never miss a filing deadline. Your compliance is our calendar — zero late fees, guaranteed.",                          color: "sky"    },
   { icon: <ShieldCheck      size={26} />, title: "Zero-Error Accuracy",desc: "Multi-layer review process with 99.8% accuracy. Every return double-checked before submission.",                           color: "blue"   },
-  { icon: <Users            size={26} />, title: "Expert Team",        desc: "CA, CS, and tech professionals with 8+ years of domain experience at your service.",                                        color: "indigo" },
+  { icon: <Users            size={26} />, title: "Expert Team",        desc: "CA, CS, and tech professionals with 5+ years of domain experience at your service.",                                        color: "indigo" },
   { icon: <TrendingUp       size={26} />, title: "Growth Oriented",    desc: "Beyond compliance — we advise on tax optimization strategies that directly boost your bottom line.",                         color: "violet" },
   { icon: <HeadphonesIcon   size={26} />, title: "Dedicated Support",  desc: "Your assigned relationship manager is always just a call or message away — not a ticket queue.",                            color: "cyan"   },
   { icon: <Sparkles         size={26} />, title: "Tech-Powered",       desc: "Proprietary automation tools reduce manual errors and cut your compliance time by 70%.",                                    color: "teal"   },
@@ -93,11 +93,11 @@ export default function WhyUs() {
               ))}
             </div>
             <p className="text-slate-600 text-sm italic max-w-lg">
-              &quot;Bhandari & Co. has been filing our GST returns for 3 years. Zero penalties,
+              &quot;Bhandari & Co. has been filing our GST returns for 5+ years. Zero penalties,
               maximum ITC recovery, and a team that actually answers calls. Highly recommended.&quot;
             </p>
             <span className="text-sky-600 font-semibold text-sm">
-              — Rajesh Mehta, Director, Mehta Textiles Pvt. Ltd.
+              — Rishabh Bhandari, Director, Bhandari and Company
             </span>
           </div>
           <motion.button

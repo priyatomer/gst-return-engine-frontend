@@ -116,25 +116,6 @@ export default function Hero() {
             </motion.button>
           </motion.div>
 
-          {/* Trust stats */}
-          <motion.div
-            variants={fadeUp}
-            className="flex flex-wrap justify-center gap-8 mt-6 pt-6 border-t border-sky-200 w-full"
-          >
-            {[
-              { value: "10,000+", label: "Returns Filed"   },
-              { value: "99.8%",   label: "Accuracy Rate"   },
-              { value: "500+",    label: "Happy Clients"    },
-              { value: "8+",      label: "Years Experience" },
-            ].map((s) => (
-              <div key={s.label} className="text-center">
-                <div className="text-2xl font-black gradient-text">{s.value}</div>
-                <div className="text-xs text-slate-500 mt-0.5 uppercase tracking-wider">
-                  {s.label}
-                </div>
-              </div>
-            ))}
-          </motion.div>
         </motion.div>
       </div>
 
