@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geist.variable} scroll-smooth`}>
+    <html lang="en" className={`${geist.variable} scroll-smooth`} data-scroll-behavior="smooth">
       <body className="bg-white text-slate-900 antialiased overflow-x-hidden">
         {children}
       </body>

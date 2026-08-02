@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, FileText } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 const navLinks = [
   { label: "Home",       href: "#home" },
@@ -53,18 +55,18 @@ export default function Navbar() {
           {/* Logo */}
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className="flex items-center gap-3 cursor-pointer"
+            className="cursor-pointer"
             onClick={() => goto("#home")}
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center font-black text-xl text-white shadow-lg glow-sky">
-              B
-            </div>
-            <div className="leading-tight">
-              <div className="font-bold text-lg text-slate-800">Bhandari</div>
-              <div className="text-xs gradient-text tracking-widest uppercase font-semibold">
-                & Co.
-              </div>
-            </div>
+            <Image
+              src="/logo.svg"
+              alt="Bhandari & Co."
+              width={220}
+              height={56}
+              priority
+              className="h-14 w-auto"
+              style={{ width: "auto" }}
+            />
           </motion.div>
 
           {/* Desktop links */}
@@ -96,7 +98,16 @@ export default function Navbar() {
           </ul>
 
           {/* CTA */}
-          <div className="hidden md:flex">
+          <div className="hidden md:flex items-center gap-3">
+            <Link href="/fee-sheet">
+              <motion.span
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg border border-sky-200 text-sky-600 hover:bg-sky-50 transition-colors cursor-pointer"
+              >
+                <FileText size={14} /> Fee Sheet
+              </motion.span>
+            </Link>
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
@@ -136,6 +147,9 @@ export default function Navbar() {
                   {label}
                 </button>
               ))}
+              <Link href="/fee-sheet" className="flex items-center gap-2 py-3 px-4 text-sky-600 hover:bg-sky-50 rounded-lg transition-all text-base font-medium border border-sky-100">
+                <FileText size={16} /> Fee Sheet
+              </Link>
               <button
                 onClick={() => goto("#contact")}
                 className="btn-primary text-sm mt-2 justify-center"

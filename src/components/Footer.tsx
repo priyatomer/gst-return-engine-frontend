@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowUp, Briefcase, MessageCircle, AtSign, Globe } from "lucide-react";
+import Image from "next/image";
 
 const navLinks = [
   { label: "Home",       href: "#home"     },
@@ -30,15 +31,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
           {/* Brand */}
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center font-black text-xl text-white shadow-lg">
-                B
-              </div>
-              <div>
-                <div className="text-white font-bold">Bhandari</div>
-                <div className="text-sky-400 text-xs tracking-widest uppercase">& Co.</div>
-              </div>
-            </div>
+            <Image
+              src="/logo-dark.svg"
+              alt="Bhandari & Co."
+              width={220}
+              height={56}
+              className="h-14 w-auto"
+              style={{ width: "auto" }}
+            />
             <p className="text-slate-400 text-sm leading-relaxed">
               India&apos;s trusted partner for GST compliance and enterprise software — empowering
               businesses to grow with confidence.
