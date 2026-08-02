@@ -25,6 +25,7 @@ interface InvoiceData {
   invoiceNo: string;
   invoiceDate: string;
   financialYear: string;
+  turnover: string;
   gstEnabled: boolean;
   clientName: string;
   gstin: string;
@@ -75,6 +76,19 @@ const GST_SERVICES = [
   "Projected Balance Sheet", "Estimated Balance Sheet", "Tax Audit", "GST Audit",
   "Bank Reconciliation", "Notice Reply", "GST Amendment", "GST Refund Claim",
   "GST Advisory Services", "Other",
+];
+
+const TURNOVER_RANGES = [
+  "From INR 0 To 5 Lakh",
+  "From INR 5 Lakh To 10 Lakh",
+  "From INR 10 Lakh To 20 Lakh",
+  "From INR 20 Lakh To 40 Lakh",
+  "From INR 40 Lakh To 75 Lakh",
+  "From INR 75 Lakh To 1 Crore",
+  "From INR 1 Crore To 2 Crore",
+  "From INR 2 Crore To 5 Crore",
+  "From INR 5 Crore To 10 Crore",
+  "Above INR 10 Crore",
 ];
 
 const FINANCIAL_YEARS = ["2023-24", "2024-25", "2025-26", "2026-27"];
@@ -140,7 +154,7 @@ const newLine = (): ServiceLine => ({
 });
 
 const INITIAL: InvoiceData = {
-  invoiceNo: "", invoiceDate: "", financialYear: "2025-26", gstEnabled: true,
+  invoiceNo: "", invoiceDate: "", financialYear: "2025-26", turnover: "", gstEnabled: true,
   clientName: "", gstin: "", pan: "", address: "", city: "", state: "", pincode: "", email: "", phone: "",
   services: [{ id: "svc-0", service: "", otherService: "", description: "", periodFrom: "", periodTo: "", duration: 1, rate: 0 }],
   discount: 0, notes: "",
@@ -265,6 +279,7 @@ const InvoicePreview = forwardRef<HTMLDivElement, {
             ["Invoice No.",    data.invoiceNo || "—"],
             ["Invoice Date",   fmtDate(data.invoiceDate) || "—"],
             ["Financial Year", data.financialYear],
+            ...(data.turnover ? [["Turnover", data.turnover]] as [string, string][] : []),
             ["Tax Type",       data.gstEnabled ? (isInterState ? "IGST" : "CGST + SGST") : "Non-GST"],
           ] as [string,string][]).map(([k,v]) => (
             <div key={k} style={{ display:"flex", justifyContent:"space-between", fontSize:10, color:"#475569", marginBottom:2 }}>
@@ -533,6 +548,11 @@ export default function FeeSheetDrawer({
                   <div>
                     <FLabel required>Invoice Date</FLabel>
                     <TInput type="date" value={data.invoiceDate} onChange={v => set("invoiceDate", v)} error={err("invoiceDate")} />
+                  </div>
+                  <div>
+                    <FLabel>Turnover</FLabel>
+                    <SInput value={data.turnover} onChange={v => set("turnover", v)}
+                      options={TURNOVER_RANGES} placeholder="Select turnover…" />
                   </div>
                   <div>
                     <FLabel>Tax Type</FLabel>
