@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getWorkflowState, setLeadWorkflow } from "@/lib/workflowState";
 import { getAuth } from "@/lib/adminAuth";
+import { getLead } from "@/lib/leadsStore";
 import {
   getFeeSheets, addFeeSheet, uploadPaymentProof, approvePayment,
   type FeeSheet, type FeeStatus,
@@ -92,6 +93,7 @@ function FeeSheetContent() {
   const leadName = params.get("name") ?? "";
   const user     = getAuth();
   const isAdmin  = user?.role === "Super Admin";
+  const leadRecord = leadId ? getLead(leadId) : undefined;
 
   const [sheets, setSheets]       = useState<FeeSheet[]>([]);
   const [search, setSearch]       = useState("");
@@ -300,7 +302,12 @@ function FeeSheetContent() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         onSave={handleSaved}
-        prefillClient={leadName}
+        prefillClient={leadRecord?.firmName || leadName}
+        prefillEmail={leadRecord?.email}
+        prefillPhone={leadRecord?.contactNumber}
+        prefillState={leadRecord?.state}
+        prefillGstin={leadRecord?.gstNumber}
+        prefillPan={leadRecord?.panNumber}
         leadId={leadId}
         leadName={leadName}
       />

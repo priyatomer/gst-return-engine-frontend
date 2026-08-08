@@ -2,7 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef, useState } from "react";
-import { FileText, RefreshCw, AlertCircle, DollarSign, BookOpen, ShieldCheck, Globe, Smartphone, Server, Bot, BarChart, Lock } from "lucide-react";
+import { FileText, RefreshCw, AlertCircle, DollarSign, BookOpen, ShieldCheck, Globe, Smartphone, BarChart } from "lucide-react";
 
 const tabs = ["GST Filing Services", "Software Solutions"];
 
@@ -20,11 +20,6 @@ const gstServices = [
 const softwareServices = [
   { icon: <Globe       size={22} />, title: "Web App Development",  desc: "Full-stack React/Next.js and Node.js applications with modern, scalable architecture."         },
   { icon: <Smartphone  size={22} />, title: "Mobile App Dev",       desc: "Cross-platform iOS and Android applications using React Native and Flutter."                   },
-  { icon: <Server      size={22} />, title: "Cloud & DevOps",       desc: "AWS/GCP infrastructure, CI/CD pipelines, containerization, and 24/7 monitoring."              },
-  { icon: <Bot         size={22} />, title: "AI & Automation",      desc: "Intelligent automation, AI chatbots, data pipelines, and ML model integration."                },
-  { icon: <BarChart    size={22} />, title: "SaaS Development",     desc: "End-to-end SaaS platforms from MVP to enterprise scale with subscription management."          },
-  { icon: <Lock        size={22} />, title: "Cybersecurity",        desc: "Security audits, penetration testing, compliance (ISO 27001, SOC2), and hardening."            },
-  { icon: <FileText    size={22} />, title: "ERP & CRM",            desc: "Custom ERP, CRM, and HRMS systems integrated with your existing business tools."               },
   { icon: <RefreshCw   size={22} />, title: "API Integration",      desc: "RESTful & GraphQL APIs, third-party integrations, and microservices architecture."              },
 ];
 

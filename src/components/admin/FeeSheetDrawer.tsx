@@ -372,6 +372,11 @@ export default function FeeSheetDrawer({
   onClose,
   onSave,
   prefillClient = "",
+  prefillEmail = "",
+  prefillPhone = "",
+  prefillState = "",
+  prefillGstin = "",
+  prefillPan = "",
   leadId = null,
   leadName = "",
 }: {
@@ -379,6 +384,11 @@ export default function FeeSheetDrawer({
   onClose: () => void;
   onSave: (sheet: SavedFeeSheet, continueToDocs?: boolean) => void;
   prefillClient?: string;
+  prefillEmail?: string;
+  prefillPhone?: string;
+  prefillState?: string;
+  prefillGstin?: string;
+  prefillPan?: string;
   leadId?: number | null;
   leadName?: string;
 }) {
@@ -391,11 +401,15 @@ export default function FeeSheetDrawer({
   // Reset & pre-fill every time the drawer opens
   useEffect(() => {
     if (open) {
-      setData({ ...INITIAL, invoiceNo: autoNo(), invoiceDate: today(), clientName: prefillClient });
+      setData({
+        ...INITIAL, invoiceNo: autoNo(), invoiceDate: today(),
+        clientName: prefillClient, email: prefillEmail, phone: prefillPhone,
+        state: prefillState, gstin: prefillGstin, pan: prefillPan,
+      });
       setErrors({});
       setTouched(false);
     }
-  }, [open, prefillClient]);
+  }, [open, prefillClient, prefillEmail, prefillPhone, prefillState, prefillGstin, prefillPan]);
 
   // Lock body scroll
   useEffect(() => {
