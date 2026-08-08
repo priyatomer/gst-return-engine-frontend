@@ -60,7 +60,7 @@ export default function OnboardedClientsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
-                {["Client","Fee Sheet No.","Services","Amount","Payment Status","Approved On"].map(h => (
+                {["Client","Fee Sheet No.","Services","Amount","Payment Status","Added By","Approved On"].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -68,7 +68,7 @@ export default function OnboardedClientsPage() {
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-400">
+                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-400">
                     <div className="flex flex-col items-center gap-2">
                       <UserCheck size={22} className="text-slate-300" />
                       No onboarded clients yet — clients appear here once their fee sheet payment is approved.
@@ -92,6 +92,7 @@ export default function OnboardedClientsPage() {
                   <td className="px-4 py-3">
                     <span className={`text-[11px] font-semibold px-2 py-1 rounded-full ${STATUS_COLOR[inv.status]}`}>{inv.status}</span>
                   </td>
+                  <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">{inv.createdBy || "—"}</td>
                   <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{inv.approvedAt ?? inv.paidDate}</td>
                 </tr>
               ))}

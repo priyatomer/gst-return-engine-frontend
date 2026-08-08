@@ -1,17 +1,16 @@
 export interface LeadWorkflow {
-  stage: number; // 0=Lead Created, 1=Fee Sheet Generated, 2=Documents Uploaded, 3=Complete
+  stage: number; // 0=Lead Created, 1=Fee Sheet Generated, 2=Complete
   feeSheetNo?: string;
-  docsCount?: number;
 }
 
 const WF_KEY = "bc_lead_workflow_v1";
 
 // Default stages for demo leads (seeds the first load)
 export const DEFAULT_STAGES: Record<number, LeadWorkflow> = {
-  5:  { stage: 3, feeSheetNo: "BC-GST-2606-085", docsCount: 3 }, // Mohan Lal - Converted
-  4:  { stage: 1, feeSheetNo: "BC-GST-2606-091" },               // Anita - Fee sheet done
-  3:  { stage: 1, feeSheetNo: "BC-GST-2606-090" },               // Vikram - Fee sheet done
-  10: { stage: 2, docsCount: 2 },                                  // Deepa - Docs uploaded
+  5:  { stage: 2, feeSheetNo: "BC-GST-2606-085" }, // Mohan Lal - Converted
+  4:  { stage: 1, feeSheetNo: "BC-GST-2606-091" }, // Anita - Fee sheet done
+  3:  { stage: 1, feeSheetNo: "BC-GST-2606-090" }, // Vikram - Fee sheet done
+  10: { stage: 1 },                                 // Deepa - Fee sheet done
 };
 
 export function getWorkflowState(): Record<string, LeadWorkflow> {
@@ -37,4 +36,4 @@ export function setLeadWorkflow(leadId: number, data: Partial<LeadWorkflow>) {
   return state[leadId];
 }
 
-export const WORKFLOW_STEPS = ["Lead Created", "Fee Sheet Generated", "Docs Uploaded", "Complete"];
+export const WORKFLOW_STEPS = ["Lead Created", "Fee Sheet Generated", "Complete"];

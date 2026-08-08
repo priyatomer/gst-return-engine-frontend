@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { AuthUser, clearAuth } from "@/lib/adminAuth";
 import {
   LayoutDashboard, Users, Target, UserCheck,
-  Receipt, CheckSquare, FolderOpen, UserCog, Settings,
+  Receipt, CheckSquare, UserCog, Settings,
   LogOut, Menu, ChevronRight, Crosshair,
 } from "lucide-react";
 
@@ -32,8 +32,7 @@ const NAV = [
   {
     section: "Operations",
     items: [
-      { label: "Tasks",     href: "/admin/tasks",     icon: CheckSquare },
-      { label: "Documents", href: "/admin/documents", icon: FolderOpen },
+      { label: "Tasks", href: "/admin/tasks", icon: CheckSquare },
     ],
   },
   {

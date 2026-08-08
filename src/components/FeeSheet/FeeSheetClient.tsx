@@ -280,7 +280,9 @@ function TextInput({
   return (
     <>
       <input type={type} value={value} readOnly={readOnly} placeholder={placeholder}
-        onChange={e => onChange?.(e.target.value)} className={`${base} ${cls}`} />
+        onChange={e => onChange?.(e.target.value)}
+        onWheel={type === "number" ? e => e.currentTarget.blur() : undefined}
+        className={`${base} ${cls}`} />
       <FieldError msg={error} />
     </>
   );

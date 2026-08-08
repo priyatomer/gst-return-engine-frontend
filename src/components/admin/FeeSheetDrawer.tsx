@@ -10,7 +10,7 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface ServiceLine {
+export interface ServiceLine {
   id: string;
   service: string;
   otherService: string;
@@ -21,7 +21,7 @@ interface ServiceLine {
   rate: number;
 }
 
-interface InvoiceData {
+export interface InvoiceData {
   invoiceNo: string;
   invoiceDate: string;
   financialYear: string;
@@ -50,11 +50,12 @@ export interface SavedFeeSheet {
   amount: number;
   leadId?: number;
   leadName?: string;
+  invoiceData: InvoiceData;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const FIRM = {
+export const FIRM = {
   name: "Bhandari & Company",
   gstin: "08EWEPB8031A1Z2",
   address: "D-52, Saket Colony Adarsh Nagar, Opp Jain Mandir, Jawahar Nagar, Jaipur, Rajasthan - 302004",
@@ -64,7 +65,7 @@ const FIRM = {
   state: "Rajasthan",
 };
 
-const GST_RATE = 18;
+export const GST_RATE = 18;
 
 const GST_SERVICES = [
   "Digital Signature Certificate", "Trade Mark Registration", "Copyright Registration",
@@ -186,6 +187,7 @@ function TInput({ value, onChange, error, placeholder, type = "text", readOnly }
     <>
       <input type={type} value={value} readOnly={readOnly} placeholder={placeholder}
         onChange={e => onChange?.(e.target.value)}
+        onWheel={type === "number" ? e => e.currentTarget.blur() : undefined}
         className={`w-full px-3 py-2 text-sm rounded-lg border outline-none transition-all duration-200 ${cls}`} />
       <FieldError msg={error} />
     </>
@@ -225,7 +227,7 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
 
 // ─── Invoice Preview ──────────────────────────────────────────────────────────
 
-const InvoicePreview = forwardRef<HTMLDivElement, {
+export const InvoicePreview = forwardRef<HTMLDivElement, {
   data: InvoiceData; subtotal: number; cgst: number; sgst: number; igst: number; total: number; isInterState: boolean;
 }>(({ data, subtotal, cgst, sgst, igst, total, isInterState }, ref) => {
   const svcName = (s: ServiceLine) => s.service === "Other" && s.otherService ? s.otherService : s.service || "—";
@@ -382,7 +384,7 @@ export default function FeeSheetDrawer({
 }: {
   open: boolean;
   onClose: () => void;
-  onSave: (sheet: SavedFeeSheet, continueToDocs?: boolean) => void;
+  onSave: (sheet: SavedFeeSheet, markComplete?: boolean) => void;
   prefillClient?: string;
   prefillEmail?: string;
   prefillPhone?: string;
@@ -474,12 +476,13 @@ export default function FeeSheetDrawer({
     amount:   total,
     leadId:   leadId ?? undefined,
     leadName: leadId ? leadName : undefined,
+    invoiceData: data,
   });
 
-  const handleSave = (continueToDocs = false) => {
+  const handleSave = (markComplete = false) => {
     const errs = validate(data);
     if (Object.keys(errs).length) { setErrors(errs); setTouched(true); return; }
-    onSave(buildSheet(), continueToDocs);
+    onSave(buildSheet(), markComplete);
     onClose();
   };
 
@@ -800,7 +803,7 @@ export default function FeeSheetDrawer({
             {leadId && (
               <button onClick={() => handleSave(true)}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200">
-                Save &amp; Upload Docs <ArrowRight size={14} />
+                Save &amp; Mark Complete <ArrowRight size={14} />
               </button>
             )}
           </div>

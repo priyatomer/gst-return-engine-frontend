@@ -1,3 +1,5 @@
+import type { InvoiceData } from "@/components/admin/FeeSheetDrawer";
+
 export type FeeStatus = "Paid" | "Unpaid" | "Partial" | "Pending for Approval";
 
 export interface FeeSheet {
@@ -11,6 +13,8 @@ export interface FeeSheet {
   amount: number;
   status: FeeStatus;
   paidDate: string;
+  createdBy?: string;
+  invoiceData?: InvoiceData;
   proofFileName?: string;
   proofDataUrl?: string;
   proofUploadedAt?: string;

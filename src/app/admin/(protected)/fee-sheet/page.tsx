@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useRef } from "react";
 import { Search, Plus, Download, ArrowLeft, ArrowRight, Receipt, Upload, CheckCircle2, FileCheck, Paperclip } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { getWorkflowState, setLeadWorkflow } from "@/lib/workflowState";
 import { getAuth } from "@/lib/adminAuth";
 import { getLead } from "@/lib/leadsStore";
@@ -11,7 +11,9 @@ import {
   getFeeSheets, addFeeSheet, uploadPaymentProof, approvePayment,
   type FeeSheet, type FeeStatus,
 } from "@/lib/feeSheetStore";
-import FeeSheetDrawer, { type SavedFeeSheet } from "@/components/admin/FeeSheetDrawer";
+import FeeSheetDrawer, {
+  InvoicePreview, FIRM, type SavedFeeSheet, type InvoiceData,
+} from "@/components/admin/FeeSheetDrawer";
 
 const STATUS_COLOR: Record<FeeStatus, string> = {
   "Paid":                 "bg-emerald-50 text-emerald-600",
@@ -24,6 +26,18 @@ const ACCEPTED_TYPES = [".pdf", ".jpg", ".jpeg"];
 
 const fmtINR = (n: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+
+function computeTotals(data: InvoiceData) {
+  const rawTotal    = data.services.reduce((a, x) => a + x.rate * x.duration, 0);
+  const discountAmt = rawTotal * Math.min(100, Math.max(0, data.discount)) / 100;
+  const subtotal    = Math.max(0, rawTotal - discountAmt);
+  const isInterState = !!data.state && data.state !== FIRM.state;
+  const cgst  = data.gstEnabled && !isInterState ? subtotal * 0.09 : 0;
+  const sgst  = data.gstEnabled && !isInterState ? subtotal * 0.09 : 0;
+  const igst  = data.gstEnabled && isInterState  ? subtotal * 0.18 : 0;
+  const total = subtotal + cgst + sgst + igst;
+  return { subtotal, cgst, sgst, igst, total, isInterState };
+}
 
 function PaymentProofCell({ sheet, isAdmin, onUpload, onApprove }: {
   sheet: FeeSheet;
@@ -87,7 +101,6 @@ function PaymentProofCell({ sheet, isAdmin, onUpload, onApprove }: {
 }
 
 function FeeSheetContent() {
-  const router   = useRouter();
   const params   = useSearchParams();
   const leadId   = params.get("leadId") ? Number(params.get("leadId")) : null;
   const leadName = params.get("name") ?? "";
@@ -99,6 +112,9 @@ function FeeSheetContent() {
   const [search, setSearch]       = useState("");
   const [statusF, setStatusF]     = useState("All");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [downloadSheet, setDownloadSheet] = useState<FeeSheet | null>(null);
+  const [downloading, setDownloading]     = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { setSheets(getFeeSheets()); }, []);
 
@@ -110,31 +126,25 @@ function FeeSheetContent() {
     }
   }, [leadId]);
 
-  const handleSaved = (saved: SavedFeeSheet, continueToDocs?: boolean) => {
+  const handleSaved = (saved: SavedFeeSheet, markComplete?: boolean) => {
     const newSheet: FeeSheet = {
-      id:       Date.now(),
-      no:       saved.no,
-      leadId:   saved.leadId,
-      leadName: saved.leadName,
-      client:   saved.client,
-      date:     new Date().toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" }),
-      services: saved.services,
-      amount:   saved.amount,
-      status:   "Unpaid",
-      paidDate: "—",
+      id:          Date.now(),
+      no:          saved.no,
+      leadId:      saved.leadId,
+      leadName:    saved.leadName,
+      client:      saved.client,
+      date:        new Date().toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" }),
+      services:    saved.services,
+      amount:      saved.amount,
+      status:      "Unpaid",
+      paidDate:    "—",
+      createdBy:   user?.name ?? "Unknown",
+      invoiceData: saved.invoiceData,
     };
     setSheets(addFeeSheet(newSheet));
 
-    if (continueToDocs && leadId) {
+    if (markComplete && leadId) {
       setLeadWorkflow(leadId, { stage: 2, feeSheetNo: saved.no });
-      router.push(`/admin/documents?leadId=${leadId}&name=${encodeURIComponent(leadName)}&feeSheet=${saved.no}`);
-    }
-  };
-
-  const handleUploadDocs = (sheet: FeeSheet) => {
-    if (sheet.leadId) {
-      setLeadWorkflow(sheet.leadId, { stage: 2, feeSheetNo: sheet.no });
-      router.push(`/admin/documents?leadId=${sheet.leadId}&name=${encodeURIComponent(sheet.leadName ?? sheet.client)}&feeSheet=${sheet.no}`);
     }
   };
 
@@ -145,6 +155,30 @@ function FeeSheetContent() {
   const handleApprove = (id: number) => {
     if (!user) return;
     setSheets(approvePayment(id, user.name));
+  };
+
+  const handleDownloadRow = async (sheet: FeeSheet) => {
+    if (!sheet.invoiceData || downloading) return;
+    setDownloadSheet(sheet);
+    setDownloading(true);
+    await new Promise(r => setTimeout(r, 50));
+    if (!previewRef.current) { setDownloading(false); setDownloadSheet(null); return; }
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { default: jsPDF } = await import("jspdf");
+      const canvas  = await html2canvas(previewRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf     = new jsPDF("p", "mm", "a4");
+      const pdfW    = pdf.internal.pageSize.getWidth();
+      const pdfH    = (canvas.height * pdfW) / canvas.width;
+      const pageH   = pdf.internal.pageSize.getHeight();
+      let left = pdfH, y = 0;
+      pdf.addImage(imgData, "PNG", 0, y, pdfW, pdfH);
+      left -= pageH;
+      while (left > 0) { y = left - pdfH; pdf.addPage(); pdf.addImage(imgData, "PNG", 0, y, pdfW, pdfH); left -= pageH; }
+      pdf.save(`${sheet.no || "fee-sheet"}.pdf`);
+    } catch (e) { console.error(e); }
+    finally { setDownloading(false); setDownloadSheet(null); }
   };
 
   const filtered = sheets.filter(s =>
@@ -170,9 +204,9 @@ function FeeSheetContent() {
               </div>
               <div>
                 <p className="text-sm font-bold text-blue-900">
-                  Step 2 of 3 — Generate Fee Sheet for <span className="underline underline-offset-2">{leadName}</span>
+                  Step 2 of 2 — Generate Fee Sheet for <span className="underline underline-offset-2">{leadName}</span>
                 </p>
-                <p className="text-xs text-blue-600 mt-0.5">Fill in the fee sheet details below, then proceed to upload documents.</p>
+                <p className="text-xs text-blue-600 mt-0.5">Fill in the fee sheet details below, then save to mark this lead complete.</p>
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -189,7 +223,7 @@ function FeeSheetContent() {
       )}
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">Manage fee invoices — step 2 in the Lead → Fee Sheet → Documents workflow</p>
+        <p className="text-sm text-slate-500">Manage fee invoices — step 2 in the Lead → Fee Sheet workflow</p>
         <button onClick={() => setDrawerOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-sm">
           <Plus size={15} /> Add Fee Sheet
@@ -268,17 +302,12 @@ function FeeSheetContent() {
                     <PaymentProofCell sheet={inv} isAdmin={isAdmin} onUpload={handleUploadProof} onApprove={handleApprove} />
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Download">
-                        <Download size={13} />
-                      </button>
-                      {inv.leadId && (
-                        <button onClick={() => handleUploadDocs(inv)}
-                          className="flex items-center gap-1 text-[10px] text-violet-600 hover:text-violet-800 font-bold whitespace-nowrap px-2 py-1 rounded-lg hover:bg-violet-50 transition-colors">
-                          Docs <ArrowRight size={9} />
-                        </button>
-                      )}
-                    </div>
+                    <button onClick={() => handleDownloadRow(inv)}
+                      disabled={!inv.invoiceData || (downloading && downloadSheet?.id === inv.id)}
+                      title={inv.invoiceData ? "Download PDF" : "PDF not available for this record"}
+                      className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent">
+                      <Download size={13} />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -293,9 +322,14 @@ function FeeSheetContent() {
         <Link href="/admin/leads" className="text-blue-600 hover:underline font-medium">1. Leads</Link>
         <ArrowRight size={11} />
         <span className="font-semibold text-slate-700">2. Fee Sheet</span>
-        <ArrowRight size={11} />
-        <Link href="/admin/documents" className="text-violet-600 hover:underline font-medium">3. Documents</Link>
       </div>
+
+      {/* Hidden off-screen preview used to render PDFs for the Download action */}
+      {downloadSheet?.invoiceData && (
+        <div className="fixed -left-[9999px] top-0" style={{ width: 800 }}>
+          <InvoicePreview ref={previewRef} data={downloadSheet.invoiceData} {...computeTotals(downloadSheet.invoiceData)} />
+        </div>
+      )}
 
       {/* ── Fee Sheet Generator Drawer ── */}
       <FeeSheetDrawer

@@ -15,7 +15,9 @@ export interface EmployeeTarget {
 
 export const MONTHS = ["Apr 2026", "May 2026", "Jun 2026", "Jul 2026"];
 
-export const TARGET_DATA: Record<string, EmployeeTarget[]> = {
+const KEY = "bc_target_data_v1";
+
+const SEED_DATA: Record<string, EmployeeTarget[]> = {
   "Jul 2026": [
     {
       name: "Priya Sharma", avatar: "PS", role: "Staff",
@@ -71,12 +73,35 @@ export const TARGET_DATA: Record<string, EmployeeTarget[]> = {
 };
 
 // Clone Jun data for older months with minor variation
-TARGET_DATA["May 2026"] = TARGET_DATA["Jun 2026"].map(e => ({
+SEED_DATA["May 2026"] = SEED_DATA["Jun 2026"].map(e => ({
   ...e, targets: e.targets.map(t => ({ ...t, achieved: Math.round(t.achieved * 0.85) }))
 }));
-TARGET_DATA["Apr 2026"] = TARGET_DATA["Jun 2026"].map(e => ({
+SEED_DATA["Apr 2026"] = SEED_DATA["Jun 2026"].map(e => ({
   ...e, targets: e.targets.map(t => ({ ...t, achieved: Math.round(t.achieved * 0.78) }))
 }));
+
+function persist(data: Record<string, EmployeeTarget[]>) {
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+export function getTargetData(): Record<string, EmployeeTarget[]> {
+  if (typeof window === "undefined") return SEED_DATA;
+  try {
+    const stored = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (!stored) { persist(SEED_DATA); return SEED_DATA; }
+    return stored;
+  } catch { return SEED_DATA; }
+}
+
+export function setEmployeeTarget(month: string, entry: EmployeeTarget) {
+  const data = getTargetData();
+  const list = data[month] ? [...data[month]] : [];
+  const idx  = list.findIndex(e => e.name.toLowerCase() === entry.name.toLowerCase());
+  if (idx >= 0) list[idx] = entry; else list.push(entry);
+  const next = { ...data, [month]: list };
+  persist(next);
+  return next;
+}
 
 export const fmtTargetVal = (unit: string, val: number) =>
   unit === "₹" ? `₹${val >= 1000 ? `${(val / 1000).toFixed(0)}K` : val}` : String(val);
@@ -85,6 +110,6 @@ export function overallScore(targets: TargetItem[]) {
   return Math.round(targets.reduce((a, t) => a + Math.min(100, (t.achieved / t.target) * 100), 0) / targets.length);
 }
 
-export function findEmployeeTarget(name: string, month = MONTHS[MONTHS.length - 1]) {
-  return (TARGET_DATA[month] ?? []).find(e => e.name === name);
+export function findEmployeeTarget(name: string, month: string, data: Record<string, EmployeeTarget[]>) {
+  return (data[month] ?? []).find(e => e.name === name);
 }

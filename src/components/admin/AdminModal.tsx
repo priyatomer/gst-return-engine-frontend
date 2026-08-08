@@ -55,15 +55,16 @@ export function FLabel({ children, required }: { children: React.ReactNode; requ
 }
 
 export function FInput({
-  value, onChange, placeholder, type = "text", required,
+  value, onChange, onBlur, placeholder, type = "text", required,
 }: {
-  value: string; onChange: (v: string) => void;
+  value: string; onChange: (v: string) => void; onBlur?: () => void;
   placeholder?: string; type?: string; required?: boolean;
 }) {
   return (
     <input
-      type={type} value={value} onChange={e => onChange(e.target.value)}
+      type={type} value={value} onChange={e => onChange(e.target.value)} onBlur={onBlur}
       placeholder={placeholder} required={required}
+      onWheel={type === "number" ? e => e.currentTarget.blur() : undefined}
       className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white
         focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
     />

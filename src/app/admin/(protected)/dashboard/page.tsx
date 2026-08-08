@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Users, CheckSquare, IndianRupee, ArrowRight, CheckCircle, FileText, Crosshair, TrendingUp, UserCheck } from "lucide-react";
 import { getAuth, type AuthUser } from "@/lib/adminAuth";
 import { getFeeSheets, type FeeSheet } from "@/lib/feeSheetStore";
-import { MONTHS, TARGET_DATA, fmtTargetVal, overallScore, findEmployeeTarget } from "@/lib/targetData";
+import { MONTHS, fmtTargetVal, overallScore, findEmployeeTarget, getTargetData, type EmployeeTarget } from "@/lib/targetData";
 
 const STATS = [
   { label: "Total Clients",       value: "142",    sub: "+8 this month",      icon: Users,         color: "bg-blue-500",    light: "bg-blue-50 text-blue-600" },
@@ -47,8 +47,8 @@ function TargetBar({ label, unit, target, achieved }: { label: string; unit: str
   );
 }
 
-function MyTargetCard({ user }: { user: AuthUser }) {
-  const emp = findEmployeeTarget(user.name, currentMonth);
+function MyTargetCard({ user, targetData }: { user: AuthUser; targetData: Record<string, EmployeeTarget[]> }) {
+  const emp = findEmployeeTarget(user.name, currentMonth, targetData);
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
@@ -107,8 +107,8 @@ function MyClientsCard({ sheets }: { sheets: FeeSheet[] }) {
   );
 }
 
-function TeamTargetSection() {
-  const employees = TARGET_DATA[currentMonth] ?? [];
+function TeamTargetSection({ targetData }: { targetData: Record<string, EmployeeTarget[]> }) {
+  const employees = targetData[currentMonth] ?? [];
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
@@ -151,10 +151,12 @@ function TeamTargetSection() {
 export default function DashboardPage() {
   const [user, setUser]     = useState<AuthUser | null>(null);
   const [sheets, setSheets] = useState<FeeSheet[]>([]);
+  const [targetData, setTargetData] = useState<Record<string, EmployeeTarget[]>>({});
 
   useEffect(() => {
     setUser(getAuth());
     setSheets(getFeeSheets());
+    setTargetData(getTargetData());
   }, []);
 
   if (!user) return null;
@@ -207,7 +209,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Team Target */}
-          <TeamTargetSection />
+          <TeamTargetSection targetData={targetData} />
 
           {/* Activity Feed */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
@@ -230,7 +232,7 @@ export default function DashboardPage() {
         </>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-          <MyTargetCard user={user} />
+          <MyTargetCard user={user} targetData={targetData} />
           <MyClientsCard sheets={sheets} />
         </div>
       )}

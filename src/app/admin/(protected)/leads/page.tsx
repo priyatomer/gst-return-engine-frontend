@@ -36,7 +36,7 @@ const STAGE_COLOR: Record<Stage, string> = {
 
 function WorkflowStepper({ wf }: { wf: LeadWorkflow | undefined }) {
   const stage  = wf?.stage ?? 0;
-  const labels = ["Lead", "Fee Sheet", "Docs"];
+  const labels = ["Lead", "Fee Sheet", "Complete"];
   return (
     <div className="flex items-center gap-0.5">
       {labels.map((label, i) => (
@@ -103,14 +103,13 @@ export default function LeadsPage() {
   const workflowStats = {
     total:    leads.length,
     feeSheet: Object.values(wfState).filter(w => w.stage >= 1).length,
-    docs:     Object.values(wfState).filter(w => w.stage >= 2).length,
-    complete: Object.values(wfState).filter(w => w.stage >= 3).length,
+    complete: Object.values(wfState).filter(w => w.stage >= 2).length,
   };
 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">Track leads through the Leads → Fee Sheet → Documents workflow</p>
+        <p className="text-sm text-slate-500">Track leads through the Leads → Fee Sheet workflow</p>
         <button onClick={() => { setForm({ ...EMPTY_FORM }); setShowAdd(true); }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-sm">
           <Plus size={15} /> Add Lead
@@ -124,7 +123,6 @@ export default function LeadsPage() {
           {[
             { label: "Lead Created",   count: workflowStats.total,    color: "bg-slate-600" },
             { label: "Fee Sheet Done", count: workflowStats.feeSheet, color: "bg-blue-500" },
-            { label: "Docs Uploaded",  count: workflowStats.docs,     color: "bg-violet-500" },
             { label: "Complete",       count: workflowStats.complete, color: "bg-emerald-500" },
           ].map((s, i) => (
             <div key={s.label} className="flex items-center gap-3">
@@ -198,20 +196,15 @@ export default function LeadsPage() {
                     </td>
                     <td className="px-4 py-3"><WorkflowStepper wf={wf} /></td>
                     <td className="px-4 py-3">
-                      {currentStage >= 3 ? (
+                      {currentStage >= 2 ? (
                         <span className="flex items-center gap-1 text-xs text-emerald-600 font-semibold"><CheckCircle size={12}/> Complete</span>
                       ) : currentStage === 0 ? (
                         <button onClick={() => advanceWorkflow(l.id, 1, `/admin/fee-sheet?leadId=${l.id}&name=${encodeURIComponent(l.firmName)}`)}
                           className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-semibold group">
                           Generate Fee Sheet <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform"/>
                         </button>
-                      ) : currentStage === 1 ? (
-                        <button onClick={() => advanceWorkflow(l.id, 2, `/admin/documents?leadId=${l.id}&name=${encodeURIComponent(l.firmName)}`)}
-                          className="flex items-center gap-1 text-xs text-violet-600 hover:text-violet-800 font-semibold group">
-                          Upload Documents <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform"/>
-                        </button>
                       ) : (
-                        <button onClick={() => { setLeadWorkflow(l.id, { stage: 3 }); setWfState(p => ({ ...p, [l.id]: { ...p[l.id], stage: 3 } })); }}
+                        <button onClick={() => { setLeadWorkflow(l.id, { stage: 2 }); setWfState(p => ({ ...p, [l.id]: { ...p[l.id], stage: 2 } })); }}
                           className="text-xs text-emerald-600 hover:text-emerald-800 font-semibold">
                           Mark Complete
                         </button>
