@@ -546,7 +546,7 @@ export default function FeeSheetDrawer({
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 p-5">
 
             {/* ── LEFT: Form ── */}
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-0">
 
               {/* Invoice Details */}
               <Section title="Invoice Details" icon={<FileText size={14} />}>
@@ -765,7 +765,7 @@ export default function FeeSheetDrawer({
             </div>
 
             {/* ── RIGHT: Live Preview ── */}
-            <div className="xl:sticky xl:top-5 h-fit">
+            <div className="xl:sticky xl:top-5 h-fit min-w-0">
               <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-50 to-sky-50 border-b border-slate-100">
                   <div className="flex items-center gap-2">

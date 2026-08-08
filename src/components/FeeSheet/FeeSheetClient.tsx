@@ -691,7 +691,7 @@ export default function FeeSheetClient() {
       <div id="form-top" className="max-w-[1600px] mx-auto px-5 py-7 grid grid-cols-1 xl:grid-cols-2 gap-7">
 
         {/* ── LEFT: Form ── */}
-        <div className="space-y-5">
+        <div className="space-y-5 min-w-0">
 
           {/* Invoice Details */}
           <Card title="Invoice Details" icon={<FileText size={15} />} delay={0}>
@@ -948,7 +948,7 @@ export default function FeeSheetClient() {
         </div>
 
         {/* ── RIGHT: Preview ── */}
-        <div className="xl:sticky xl:top-24 h-fit">
+        <div className="xl:sticky xl:top-24 h-fit min-w-0">
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2, duration: 0.4 }}
             className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
