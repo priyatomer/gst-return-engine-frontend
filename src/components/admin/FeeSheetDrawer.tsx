@@ -230,7 +230,7 @@ const InvoicePreview = forwardRef<HTMLDivElement, {
 }>(({ data, subtotal, cgst, sgst, igst, total, isInterState }, ref) => {
   const svcName = (s: ServiceLine) => s.service === "Other" && s.otherService ? s.otherService : s.service || "—";
   return (
-    <div ref={ref} style={{ fontFamily:"'Inter','Segoe UI',sans-serif", backgroundColor:"#fff", color:"#0f172a", minWidth:560 }} className="p-6">
+    <div ref={ref} style={{ fontFamily:"'Inter','Segoe UI',sans-serif", backgroundColor:"#fff", color:"#0f172a", width:"100%", minWidth:320 }} className="p-6">
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
         <svg width="200" height="50" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg">
           <defs>

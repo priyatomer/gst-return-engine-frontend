@@ -360,7 +360,7 @@ const InvoicePreview = forwardRef<HTMLDivElement, PreviewProps>(
 
     return (
       <div ref={ref}
-        style={{ fontFamily: "'Inter','Segoe UI',sans-serif", backgroundColor: "#fff", color: "#0f172a", minWidth: 600 }}
+        style={{ fontFamily: "'Inter','Segoe UI',sans-serif", backgroundColor: "#fff", color: "#0f172a", width: "100%", minWidth: 320 }}
         className="p-8">
 
         {/* Header: Logo + Invoice title */}
