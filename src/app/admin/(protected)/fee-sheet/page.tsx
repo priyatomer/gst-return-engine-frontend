@@ -1,19 +1,20 @@
 "use client";
 
 import { useState, useEffect, Suspense, useRef } from "react";
-import { Search, Plus, Download, ArrowLeft, ArrowRight, Receipt, Upload, CheckCircle2, FileCheck, Paperclip } from "lucide-react";
+import { Search, Plus, Download, ArrowLeft, ArrowRight, Receipt, Upload, CheckCircle2, Paperclip } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { getWorkflowState, setLeadWorkflow } from "@/lib/workflowState";
 import { getAuth } from "@/lib/adminAuth";
 import { getLead } from "@/lib/leadsStore";
 import {
-  getFeeSheets, addFeeSheet, uploadPaymentProof, approvePayment,
+  getFeeSheets, addFeeSheet, addPaymentRecord, approvePaymentRecord, getPaidAmount, getPendingAmount,
   type FeeSheet, type FeeStatus,
 } from "@/lib/feeSheetStore";
 import FeeSheetDrawer, {
   InvoicePreview, FIRM, type SavedFeeSheet, type InvoiceData,
 } from "@/components/admin/FeeSheetDrawer";
+import AdminModal, { FLabel, FInput, FSubmit } from "@/components/admin/AdminModal";
 
 const STATUS_COLOR: Record<FeeStatus, string> = {
   "Paid":                 "bg-emerald-50 text-emerald-600",
@@ -39,64 +40,129 @@ function computeTotals(data: InvoiceData) {
   return { subtotal, cgst, sgst, igst, total, isInterState };
 }
 
-function PaymentProofCell({ sheet, isAdmin, onUpload, onApprove }: {
+function PaymentProofCell({ sheet, isAdmin, onOpenUpload, onApprove }: {
   sheet: FeeSheet;
   isAdmin: boolean;
-  onUpload: (id: number, fileName: string, dataUrl: string) => void;
-  onApprove: (id: number) => void;
+  onOpenUpload: (sheet: FeeSheet) => void;
+  onApprove: (sheetId: number, paymentId: number) => void;
 }) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [error, setError] = useState("");
+  const paid    = getPaidAmount(sheet);
+  const pending = getPendingAmount(sheet);
 
-  const handleFile = (file: File) => {
-    const ext = "." + file.name.split(".").pop()?.toLowerCase();
-    if (!ACCEPTED_TYPES.includes(ext)) {
-      setError("Only PDF, JPG or JPEG files are allowed");
-      return;
-    }
+  return (
+    <div className="space-y-1.5 min-w-[170px]">
+      <div className="flex items-center gap-2 text-[10px] font-semibold">
+        <span className="text-emerald-600">Paid {fmtINR(paid)}</span>
+        {pending > 0 && <span className="text-red-500">Due {fmtINR(pending)}</span>}
+      </div>
+
+      {sheet.payments.length > 0 && (
+        <div className="space-y-1">
+          {sheet.payments.map(p => (
+            <div key={p.id} className="flex items-center justify-between gap-1.5 text-[10px] bg-slate-50 rounded-lg px-1.5 py-1">
+              <div className="flex items-center gap-1 min-w-0">
+                {p.dataUrl ? (
+                  <a href={p.dataUrl} download={p.fileName} target="_blank" rel="noreferrer"
+                    title="View / download payment proof" className="text-blue-600 hover:text-blue-800 shrink-0">
+                    <Paperclip size={10} />
+                  </a>
+                ) : <Paperclip size={10} className="text-slate-300 shrink-0" />}
+                <span className="text-slate-700 font-semibold whitespace-nowrap">{fmtINR(p.amount)}</span>
+                <span className="text-slate-400 truncate">{p.uploadedAt}</span>
+              </div>
+              {p.status === "Approved" ? (
+                <span className="text-emerald-600 font-semibold flex items-center gap-0.5 shrink-0"><CheckCircle2 size={10} /></span>
+              ) : isAdmin ? (
+                <button onClick={() => onApprove(sheet.id, p.id)}
+                  className="text-blue-600 hover:text-blue-800 font-bold shrink-0">Approve</button>
+              ) : (
+                <span className="text-blue-500 font-semibold shrink-0">Pending</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {pending > 0 && (
+        <button onClick={() => onOpenUpload(sheet)}
+          className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-blue-600 font-semibold px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors border border-dashed border-slate-300 hover:border-blue-300">
+          <Upload size={12} /> Payment Photo
+        </button>
+      )}
+    </div>
+  );
+}
+
+function PaymentUploadModal({ sheet, onClose, onSubmit }: {
+  sheet: FeeSheet | null;
+  onClose: () => void;
+  onSubmit: (sheetId: number, amount: number, fileName: string, dataUrl: string) => void;
+}) {
+  const [file, setFile]       = useState<File | null>(null);
+  const [amount, setAmount]   = useState("");
+  const [error, setError]     = useState("");
+  const [saving, setSaving]   = useState(false);
+
+  useEffect(() => {
+    if (sheet) { setFile(null); setAmount(String(getPendingAmount(sheet))); setError(""); setSaving(false); }
+  }, [sheet]);
+
+  if (!sheet) return null;
+  const pending = getPendingAmount(sheet);
+
+  const handleFile = (f: File) => {
+    const ext = "." + f.name.split(".").pop()?.toLowerCase();
+    if (!ACCEPTED_TYPES.includes(ext)) { setError("Only PDF, JPG or JPEG files are allowed"); return; }
     setError("");
+    setFile(f);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const amt = Number(amount);
+    if (!file)              { setError("Please attach a payment photo or PDF"); return; }
+    if (!amt || amt <= 0)   { setError("Enter a valid amount"); return; }
+    if (amt > pending + 0.5) { setError(`Amount can't exceed the pending balance of ${fmtINR(pending)}`); return; }
+    setSaving(true);
     const reader = new FileReader();
-    reader.onload = () => onUpload(sheet.id, file.name, reader.result as string);
+    reader.onload = () => { onSubmit(sheet.id, amt, file.name, reader.result as string); onClose(); };
     reader.readAsDataURL(file);
   };
 
-  if (sheet.status === "Paid") {
-    return (
-      <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-semibold">
-        <CheckCircle2 size={12} /> Approved{sheet.approvedAt ? ` · ${sheet.approvedAt}` : ""}
-      </div>
-    );
-  }
-
-  if (sheet.status === "Pending for Approval") {
-    return (
-      <div className="space-y-1">
-        <a href={sheet.proofDataUrl} download={sheet.proofFileName}
-          className="flex items-center gap-1 text-[11px] text-blue-600 hover:underline font-medium">
-          <Paperclip size={11} /> {sheet.proofFileName}
-        </a>
-        {isAdmin ? (
-          <button onClick={() => onApprove(sheet.id)}
-            className="flex items-center gap-1 text-[11px] text-emerald-600 hover:text-emerald-800 font-bold px-2 py-1 rounded-lg hover:bg-emerald-50 transition-colors">
-            <FileCheck size={12} /> Approve Payment
-          </button>
-        ) : (
-          <span className="text-[10px] text-blue-500 font-semibold">Pending for Approval</span>
-        )}
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg" className="hidden"
-        onChange={e => { const file = e.target.files?.[0]; if (file) handleFile(file); e.target.value = ""; }} />
-      <button onClick={() => fileRef.current?.click()}
-        className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-blue-600 font-semibold px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors border border-dashed border-slate-300 hover:border-blue-300">
-        <Upload size={12} /> Upload Proof
-      </button>
-      {error && <p className="text-[10px] text-red-500 mt-1">{error}</p>}
-    </div>
+    <AdminModal open onClose={onClose} title={`Record Payment — ${sheet.no}`} size="sm">
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4 grid grid-cols-3 gap-2 text-center">
+          <div className="rounded-lg bg-slate-50 py-2">
+            <div className="text-sm font-bold text-slate-800">{fmtINR(sheet.amount)}</div>
+            <div className="text-[10px] text-slate-400">Total</div>
+          </div>
+          <div className="rounded-lg bg-emerald-50 py-2">
+            <div className="text-sm font-bold text-emerald-700">{fmtINR(getPaidAmount(sheet))}</div>
+            <div className="text-[10px] text-emerald-500">Paid</div>
+          </div>
+          <div className="rounded-lg bg-red-50 py-2">
+            <div className="text-sm font-bold text-red-600">{fmtINR(pending)}</div>
+            <div className="text-[10px] text-red-400">Pending</div>
+          </div>
+        </div>
+
+        <FLabel required>Payment Photo / PDF</FLabel>
+        <input type="file" accept=".pdf,.jpg,.jpeg"
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+          className="w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0
+            file:bg-blue-50 file:text-blue-600 file:text-xs file:font-semibold hover:file:bg-blue-100 mb-3" />
+        {file && <p className="text-[11px] text-slate-500 mb-3 -mt-2">Selected: {file.name}</p>}
+
+        <FLabel required>How much amount do you want to update?</FLabel>
+        <FInput type="number" value={amount} onChange={setAmount} placeholder={String(pending)} />
+        <p className="text-[10px] text-slate-400 mt-1">Pending balance: {fmtINR(pending)}</p>
+
+        {error && <p className="text-xs text-red-500 mt-3">{error}</p>}
+
+        <FSubmit label={saving ? "Saving…" : "Save Payment"} onCancel={onClose} />
+      </form>
+    </AdminModal>
   );
 }
 
@@ -114,6 +180,7 @@ function FeeSheetContent() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [downloadSheet, setDownloadSheet] = useState<FeeSheet | null>(null);
   const [downloading, setDownloading]     = useState(false);
+  const [uploadSheet, setUploadSheet]     = useState<FeeSheet | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { setSheets(getFeeSheets()); }, []);
@@ -140,6 +207,7 @@ function FeeSheetContent() {
       paidDate:    "—",
       createdBy:   user?.name ?? "Unknown",
       invoiceData: saved.invoiceData,
+      payments:    [],
     };
     setSheets(addFeeSheet(newSheet));
 
@@ -148,13 +216,13 @@ function FeeSheetContent() {
     }
   };
 
-  const handleUploadProof = (id: number, fileName: string, dataUrl: string) => {
-    setSheets(uploadPaymentProof(id, fileName, dataUrl));
+  const handleRecordPayment = (sheetId: number, amount: number, fileName: string, dataUrl: string) => {
+    setSheets(addPaymentRecord(sheetId, amount, fileName, dataUrl));
   };
 
-  const handleApprove = (id: number) => {
+  const handleApprovePayment = (sheetId: number, paymentId: number) => {
     if (!user) return;
-    setSheets(approvePayment(id, user.name));
+    setSheets(approvePaymentRecord(sheetId, paymentId, user.name));
   };
 
   const handleDownloadRow = async (sheet: FeeSheet) => {
@@ -187,8 +255,8 @@ function FeeSheetContent() {
      s.no.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const totalRev = sheets.reduce((a, i) => a + (i.status === "Paid" || i.status === "Partial" ? i.amount : 0), 0);
-  const totalOut = sheets.reduce((a, i) => a + (i.status === "Unpaid" ? i.amount : 0), 0);
+  const totalRev = sheets.reduce((a, i) => a + getPaidAmount(i), 0);
+  const totalOut = sheets.reduce((a, i) => a + getPendingAmount(i), 0);
   const pendingApproval = sheets.filter(i => i.status === "Pending for Approval").length;
 
   return (
@@ -299,7 +367,7 @@ function FeeSheetContent() {
                     <span className={`text-[11px] font-semibold px-2 py-1 rounded-full ${STATUS_COLOR[inv.status]}`}>{inv.status}</span>
                   </td>
                   <td className="px-4 py-3 min-w-[140px]">
-                    <PaymentProofCell sheet={inv} isAdmin={isAdmin} onUpload={handleUploadProof} onApprove={handleApprove} />
+                    <PaymentProofCell sheet={inv} isAdmin={isAdmin} onOpenUpload={setUploadSheet} onApprove={handleApprovePayment} />
                   </td>
                   <td className="px-4 py-3">
                     <button onClick={() => handleDownloadRow(inv)}
@@ -330,6 +398,9 @@ function FeeSheetContent() {
           <InvoicePreview ref={previewRef} data={downloadSheet.invoiceData} {...computeTotals(downloadSheet.invoiceData)} />
         </div>
       )}
+
+      {/* ── Record Payment Modal ── */}
+      <PaymentUploadModal sheet={uploadSheet} onClose={() => setUploadSheet(null)} onSubmit={handleRecordPayment} />
 
       {/* ── Fee Sheet Generator Drawer ── */}
       <FeeSheetDrawer

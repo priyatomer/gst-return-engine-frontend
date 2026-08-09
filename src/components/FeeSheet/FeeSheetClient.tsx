@@ -271,6 +271,15 @@ function TextInput({
   error?: string; placeholder?: string; type?: string;
   readOnly?: boolean; className?: string;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (type !== "number") return;
+    const el = inputRef.current;
+    if (!el) return;
+    const blockWheel = (e: WheelEvent) => { if (document.activeElement === el) e.preventDefault(); };
+    el.addEventListener("wheel", blockWheel, { passive: false });
+    return () => el.removeEventListener("wheel", blockWheel);
+  }, [type]);
   const base = `w-full px-3 py-2 text-sm rounded-lg border outline-none transition-all duration-200 ${className}`;
   const cls = readOnly
     ? "border-slate-200 bg-slate-50 text-slate-500 cursor-default"
@@ -279,7 +288,7 @@ function TextInput({
       : "border-slate-200 bg-white focus:ring-2 focus:ring-sky-100 focus:border-sky-400";
   return (
     <>
-      <input type={type} value={value} readOnly={readOnly} placeholder={placeholder}
+      <input ref={inputRef} type={type} value={value} readOnly={readOnly} placeholder={placeholder}
         onChange={e => onChange?.(e.target.value)}
         onWheel={type === "number" ? e => e.currentTarget.blur() : undefined}
         className={`${base} ${cls}`} />

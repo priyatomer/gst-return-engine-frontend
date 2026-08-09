@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Search, MoreVertical, Shield, UserCog } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Plus, Search, MoreVertical, Shield, UserCog, Power, Trash2 } from "lucide-react";
 import AdminModal, { FLabel, FInput, FSelect, FRow, FField, FSubmit } from "@/components/admin/AdminModal";
 
 interface AppUser {
@@ -39,6 +39,16 @@ export default function UsersPage() {
   const [search, setSearch]   = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm]       = useState({ ...EMPTY_FORM });
+  const [menuFor, setMenuFor] = useState<number | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuFor(null);
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
 
   const f = <K extends keyof typeof EMPTY_FORM>(k: K, v: string) =>
     setForm(p => ({ ...p, [k]: v }));
@@ -61,6 +71,18 @@ export default function UsersPage() {
     ]);
     setForm({ ...EMPTY_FORM });
     setShowAdd(false);
+  };
+
+  const toggleStatus = (id: number) => {
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, status: u.status === "Active" ? "Inactive" : "Active" } : u));
+    setMenuFor(null);
+  };
+
+  const deleteUser = (u: AppUser) => {
+    if (window.confirm(`Delete ${u.name}? This cannot be undone.`)) {
+      setUsers(prev => prev.filter(x => x.id !== u.id));
+    }
+    setMenuFor(null);
   };
 
   const filtered = users.filter(u =>
@@ -148,10 +170,24 @@ export default function UsersPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-xs text-slate-500">{u.lastLogin}</td>
-                <td className="px-4 py-3">
-                  <button className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100">
+                <td className="px-4 py-3 relative">
+                  <button onClick={() => setMenuFor(menuFor === u.id ? null : u.id)}
+                    className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100">
                     <MoreVertical size={14} />
                   </button>
+                  {menuFor === u.id && (
+                    <div ref={menuRef}
+                      className="absolute right-4 top-10 z-10 w-44 bg-white rounded-xl border border-slate-100 shadow-lg py-1">
+                      <button onClick={() => toggleStatus(u.id)}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50 text-left">
+                        <Power size={13} /> {u.status === "Active" ? "Deactivate" : "Activate"}
+                      </button>
+                      <button onClick={() => deleteUser(u)}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 text-left">
+                        <Trash2 size={13} /> Delete User
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}

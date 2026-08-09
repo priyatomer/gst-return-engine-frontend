@@ -151,13 +151,13 @@ const fmtDateShort = (d: string) => {
 const fmtPeriod = (from: string, to: string) =>
   from && to ? `${fmtDateShort(from)} – ${fmtDateShort(to)}` : from ? fmtDateShort(from) : "—";
 const newLine = (): ServiceLine => ({
-  id: genId(), service: "", otherService: "", description: "", periodFrom: "", periodTo: "", duration: 1, rate: 0,
+  id: genId(), service: "", otherService: "", description: "", periodFrom: "", periodTo: "", duration: 0, rate: 0,
 });
 
 const INITIAL: InvoiceData = {
   invoiceNo: "", invoiceDate: "", financialYear: "2025-26", turnover: "", gstEnabled: true,
   clientName: "", gstin: "", pan: "", address: "", city: "", state: "", pincode: "", email: "", phone: "",
-  services: [{ id: "svc-0", service: "", otherService: "", description: "", periodFrom: "", periodTo: "", duration: 1, rate: 0 }],
+  services: [{ id: "svc-0", service: "", otherService: "", description: "", periodFrom: "", periodTo: "", duration: 0, rate: 0 }],
   discount: 0, notes: "",
 };
 
@@ -180,12 +180,21 @@ function TInput({ value, onChange, error, placeholder, type = "text", readOnly }
   value: string | number; onChange?: (v: string) => void;
   error?: string; placeholder?: string; type?: string; readOnly?: boolean;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (type !== "number") return;
+    const el = inputRef.current;
+    if (!el) return;
+    const blockWheel = (e: WheelEvent) => { if (document.activeElement === el) e.preventDefault(); };
+    el.addEventListener("wheel", blockWheel, { passive: false });
+    return () => el.removeEventListener("wheel", blockWheel);
+  }, [type]);
   const cls = readOnly ? "border-slate-200 bg-slate-50 text-slate-500 cursor-default"
     : error ? "border-red-300 bg-red-50 focus:ring-2 focus:ring-red-100 focus:border-red-400"
     : "border-slate-200 bg-white focus:ring-2 focus:ring-sky-100 focus:border-sky-400";
   return (
     <>
-      <input type={type} value={value} readOnly={readOnly} placeholder={placeholder}
+      <input ref={inputRef} type={type} value={value} readOnly={readOnly} placeholder={placeholder}
         onChange={e => onChange?.(e.target.value)}
         onWheel={type === "number" ? e => e.currentTarget.blur() : undefined}
         className={`w-full px-3 py-2 text-sm rounded-lg border outline-none transition-all duration-200 ${cls}`} />

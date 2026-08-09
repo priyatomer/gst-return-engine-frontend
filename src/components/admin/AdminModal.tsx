@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
 export default function AdminModal({
@@ -60,8 +60,18 @@ export function FInput({
   value: string; onChange: (v: string) => void; onBlur?: () => void;
   placeholder?: string; type?: string; required?: boolean;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (type !== "number") return;
+    const el = inputRef.current;
+    if (!el) return;
+    const blockWheel = (e: WheelEvent) => { if (document.activeElement === el) e.preventDefault(); };
+    el.addEventListener("wheel", blockWheel, { passive: false });
+    return () => el.removeEventListener("wheel", blockWheel);
+  }, [type]);
   return (
     <input
+      ref={inputRef}
       type={type} value={value} onChange={e => onChange(e.target.value)} onBlur={onBlur}
       placeholder={placeholder} required={required}
       onWheel={type === "number" ? e => e.currentTarget.blur() : undefined}
