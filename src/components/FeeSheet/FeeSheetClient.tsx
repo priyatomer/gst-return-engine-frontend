@@ -188,6 +188,7 @@ function validate(data: InvoiceData): Errors {
   if (data.email   && !EMAIL_RE.test(data.email))   e.email   = "Invalid email address";
   if (data.phone   && !PHONE_RE.test(data.phone))   e.phone   = "10-digit mobile starting with 6–9";
   if (data.pincode && !PIN_RE.test(data.pincode))   e.pincode = "Pincode must be 6 digits";
+  if (data.discount < 0 || data.discount > 100)     e.discount = "Discount must be between 0 and 100";
   if (data.services.length === 0) e.services = "Add at least one service line";
   data.services.forEach((s, i) => {
     if (!s.service) e[`svc_name_${i}`] = "Select a service";
@@ -879,7 +880,7 @@ export default function FeeSheetClient() {
                         <div>
                           <Label required>Duration (Months)</Label>
                           <TextInput type="number" value={svc.duration}
-                            onChange={v => setLine(svc.id, "duration", Math.max(1, Number(v)))}
+                            onChange={v => setLine(svc.id, "duration", Number(v))}
                             error={err(`svc_dur_${i}`)} placeholder="1" />
                         </div>
 
@@ -887,7 +888,7 @@ export default function FeeSheetClient() {
                         <div>
                           <Label required>Rate (₹)</Label>
                           <TextInput type="number" value={svc.rate || ""}
-                            onChange={v => setLine(svc.id, "rate", Math.max(0, Number(v)))}
+                            onChange={v => setLine(svc.id, "rate", Number(v))}
                             error={err(`svc_rate_${i}`)} placeholder="0.00" />
                         </div>
 
@@ -915,7 +916,7 @@ export default function FeeSheetClient() {
               <div>
                 <Label>Discount (%)</Label>
                 <TextInput type="number" value={data.discount || ""}
-                  onChange={v => set("discount", Math.min(100, Math.max(0, Number(v))))} placeholder="0" />
+                  onChange={v => set("discount", Number(v))} error={err("discount")} placeholder="0" />
               </div>
               <div>
                 <Label>Taxable Amount</Label>

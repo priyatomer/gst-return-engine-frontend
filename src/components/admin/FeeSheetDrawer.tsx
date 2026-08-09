@@ -122,6 +122,7 @@ function validate(data: InvoiceData): Errors {
   if (data.email   && !EMAIL_RE.test(data.email))   e.email   = "Invalid email address";
   if (data.phone   && !PHONE_RE.test(data.phone))   e.phone   = "10-digit mobile starting with 6–9";
   if (data.pincode && !PIN_RE.test(data.pincode))   e.pincode = "Pincode must be 6 digits";
+  if (data.discount < 0 || data.discount > 100)     e.discount = "Discount must be between 0 and 100";
   if (data.services.length === 0) e.services = "Add at least one service line";
   data.services.forEach((s, i) => {
     if (!s.service)  e[`svc_name_${i}`] = "Select a service";
@@ -696,11 +697,11 @@ export default function FeeSheetDrawer({
                           </div>
                           <div>
                             <FLabel required>Duration (Months)</FLabel>
-                            <TInput type="number" value={svc.duration} onChange={v => setLine(svc.id, "duration", Math.max(1, Number(v)))} error={err(`svc_dur_${i}`)} placeholder="1" />
+                            <TInput type="number" value={svc.duration} onChange={v => setLine(svc.id, "duration", Number(v))} error={err(`svc_dur_${i}`)} placeholder="1" />
                           </div>
                           <div>
                             <FLabel required>Rate (₹)</FLabel>
-                            <TInput type="number" value={svc.rate || ""} onChange={v => setLine(svc.id, "rate", Math.max(0, Number(v)))} error={err(`svc_rate_${i}`)} placeholder="0.00" />
+                            <TInput type="number" value={svc.rate || ""} onChange={v => setLine(svc.id, "rate", Number(v))} error={err(`svc_rate_${i}`)} placeholder="0.00" />
                           </div>
                           <div className="col-span-2">
                             <FLabel>Amount</FLabel>
@@ -720,7 +721,7 @@ export default function FeeSheetDrawer({
                 <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-3">
                   <div>
                     <FLabel>Discount (%)</FLabel>
-                    <TInput type="number" value={data.discount||""} onChange={v => set("discount", Math.min(100, Math.max(0, Number(v))))} placeholder="0" />
+                    <TInput type="number" value={data.discount||""} onChange={v => set("discount", Number(v))} error={err("discount")} placeholder="0" />
                   </div>
                   <div>
                     <FLabel>Taxable Amount</FLabel>

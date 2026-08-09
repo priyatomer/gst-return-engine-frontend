@@ -28,6 +28,17 @@ body {
   overflow-x: hidden;
 }
 
+/* ── Hide native number-input spin buttons everywhere ── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 /* ── Gradient text ── */
 .gradient-text {
   background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 60%, #7c3aed 100%);

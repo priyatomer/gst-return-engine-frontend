@@ -29,7 +29,7 @@ const ROLE_COLOR: Record<string, string> = {
   "Accountant":  "bg-emerald-50 text-emerald-700",
 };
 
-const EMPTY_FORM = { name: "", email: "", role: "Staff", status: "Active" };
+const EMPTY_FORM = { name: "", email: "", role: "Custom", customRole: "", status: "Active" };
 
 const initials = (name: string) =>
   name.trim().split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("");
@@ -55,13 +55,14 @@ export default function UsersPage() {
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.email.trim()) return;
+    const role = form.role === "Super Admin" ? "Super Admin" : form.customRole.trim();
+    if (!form.name.trim() || !form.email.trim() || !role) return;
     setUsers(prev => [
       {
         id:        Date.now(),
         name:      form.name,
         email:     form.email,
-        role:      form.role,
+        role,
         status:    form.status,
         lastLogin: "Just now",
         avatar:    initials(form.name),
@@ -209,12 +210,18 @@ export default function UsersPage() {
             </FField>
             <FField>
               <FLabel>Role</FLabel>
-              <FSelect value={form.role} onChange={v => f("role", v)} options={["Super Admin","Staff","Accountant","Viewer"]} />
+              <FSelect value={form.role} onChange={v => f("role", v)} options={["Super Admin","Custom"]} />
             </FField>
             <FField>
               <FLabel>Status</FLabel>
               <FSelect value={form.status} onChange={v => f("status", v)} options={["Active","Inactive"]} />
             </FField>
+            {form.role === "Custom" && (
+              <FField span2>
+                <FLabel required>Role Name</FLabel>
+                <FInput value={form.customRole} onChange={v => f("customRole", v)} placeholder="e.g. Staff, Accountant, Viewer" required />
+              </FField>
+            )}
           </FRow>
           <p className="text-xs text-slate-400 mt-3">A temporary password will be sent to their email.</p>
           <FSubmit label="Add User" onCancel={() => setShowAdd(false)} />
