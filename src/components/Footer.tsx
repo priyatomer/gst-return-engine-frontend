@@ -3,13 +3,16 @@
 import { motion } from "framer-motion";
 import { ArrowUp, Briefcase, MessageCircle, AtSign, Globe } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 const navLinks = [
-  { label: "Home",       href: "#home"     },
-  { label: "About Us",   href: "#about"    },
-  { label: "Our Brands", href: "#brands"   },
-  { label: "Services",   href: "#services" },
-  { label: "Contact Us", href: "#contact"  },
+  { label: "Home",          href: "#home",          type: "anchor" as const },
+  { label: "About Us",      href: "#about",         type: "anchor" as const },
+  { label: "Our Brands",    href: "#brands",        type: "anchor" as const },
+  { label: "Services",      href: "#services",      type: "anchor" as const },
+  { label: "UK Accounting", href: "/uk-accounting", type: "route"  as const },
+  { label: "Contact Us",    href: "#contact",       type: "anchor" as const },
 ];
 
 const gstServices    = ["GST Registration", "GSTR-1 / 3B Filing", "Annual Returns (GSTR-9)", "ITC Reconciliation", "GST Audit Support", "Refund Claims"];
@@ -22,6 +25,15 @@ const socials = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+  const router   = useRouter();
+  const isHome   = pathname === "/";
+
+  const goto = (href: string) => {
+    if (isHome) document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+    else router.push(`/${href}`);
+  };
+
   return (
     <footer className="bg-slate-900 relative overflow-hidden">
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-sky-400/50 to-transparent" />
@@ -62,14 +74,20 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Quick Links</h4>
             <ul className="flex flex-col gap-2.5">
-              {navLinks.map(({ label, href }) => (
+              {navLinks.map(({ label, href, type }) => (
                 <li key={label}>
-                  <button
-                    onClick={() => document.querySelector(href)?.scrollIntoView({ behavior: "smooth" })}
-                    className="text-slate-400 hover:text-sky-400 text-sm transition-colors"
-                  >
-                    {label}
-                  </button>
+                  {type === "route" ? (
+                    <Link href={href} className="text-slate-400 hover:text-sky-400 text-sm transition-colors">
+                      {label}
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => goto(href)}
+                      className="text-slate-400 hover:text-sky-400 text-sm transition-colors"
+                    >
+                      {label}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

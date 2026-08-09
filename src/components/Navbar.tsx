@@ -4,19 +4,25 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 const navLinks = [
-  { label: "Home",       href: "#home" },
-  { label: "About Us",   href: "#about" },
-  { label: "Our Brands", href: "#brands" },
-  { label: "Services",   href: "#services" },
-  { label: "Contact",    href: "#contact" },
+  { label: "Home",          href: "#home",          type: "anchor" as const },
+  { label: "About Us",      href: "#about",         type: "anchor" as const },
+  { label: "Our Brands",    href: "#brands",        type: "anchor" as const },
+  { label: "Services",      href: "#services",      type: "anchor" as const },
+  { label: "UK Accounting", href: "/uk-accounting", type: "route"  as const },
+  { label: "Contact",       href: "#contact",       type: "anchor" as const },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled]       = useState(false);
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [activeSection, setActive]    = useState("home");
+  const pathname = usePathname();
+  const router   = useRouter();
+  const isHome   = pathname === "/";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -33,9 +39,15 @@ export default function Navbar() {
     return () => observer.disconnect();
   }, []);
 
+  // Anchor links only exist on the homepage — scroll there directly when
+  // already home, otherwise navigate home first and let the hash take over.
   const goto = (href: string) => {
     setMobileOpen(false);
-    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+    if (isHome) {
+      document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      router.push(`/${href}`);
+    }
   };
 
   return (
@@ -70,27 +82,32 @@ export default function Navbar() {
 
           {/* Desktop links */}
           <ul className="hidden md:flex items-center gap-1">
-            {navLinks.map(({ label, href }) => {
-              const id       = href.replace("#", "");
-              const isActive = activeSection === id;
+            {navLinks.map(({ label, href, type }) => {
+              const isActive = type === "route"
+                ? pathname.startsWith(href)
+                : isHome && activeSection === href.replace("#", "");
+              const linkClass = `relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
+                isActive ? "text-sky-600" : "text-slate-600 hover:text-sky-500"
+              }`;
+              const indicator = isActive && (
+                <motion.span
+                  layoutId="nav-indicator"
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-gradient-to-r from-sky-400 to-blue-500"
+                />
+              );
               return (
                 <li key={label}>
-                  <button
-                    onClick={() => goto(href)}
-                    className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
-                      isActive
-                        ? "text-sky-600"
-                        : "text-slate-600 hover:text-sky-500"
-                    }`}
-                  >
-                    {label}
-                    {isActive && (
-                      <motion.span
-                        layoutId="nav-indicator"
-                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-gradient-to-r from-sky-400 to-blue-500"
-                      />
-                    )}
-                  </button>
+                  {type === "route" ? (
+                    <Link href={href} className={linkClass}>
+                      {label}
+                      {indicator}
+                    </Link>
+                  ) : (
+                    <button onClick={() => goto(href)} className={linkClass}>
+                      {label}
+                      {indicator}
+                    </button>
+                  )}
                 </li>
               );
             })}
@@ -128,15 +145,18 @@ export default function Navbar() {
             className="fixed top-[68px] left-0 right-0 z-40 bg-white/95 backdrop-blur-xl shadow-xl border-b border-sky-100"
           >
             <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-2">
-              {navLinks.map(({ label, href }) => (
-                <button
-                  key={label}
-                  onClick={() => goto(href)}
-                  className="text-left py-3 px-4 text-slate-700 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all text-base font-medium"
-                >
-                  {label}
-                </button>
-              ))}
+              {navLinks.map(({ label, href, type }) => {
+                const mobileClass = "text-left py-3 px-4 text-slate-700 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all text-base font-medium";
+                return type === "route" ? (
+                  <Link key={label} href={href} onClick={() => setMobileOpen(false)} className={mobileClass}>
+                    {label}
+                  </Link>
+                ) : (
+                  <button key={label} onClick={() => goto(href)} className={mobileClass}>
+                    {label}
+                  </button>
+                );
+              })}
               <button
                 onClick={() => goto("#contact")}
                 className="btn-primary text-sm mt-2 justify-center"
